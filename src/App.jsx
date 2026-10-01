@@ -22,7 +22,7 @@ function App() {
                       Welcome to Farm-to-Home Marketplace
                     </h2>
                     <p className="text-gray-600 mt-2">
-                      Connecting local farmers directly with consumers.
+                      Connecting  farmers directly with consumers.
                     </p>
                   </div>
                 }
@@ -34,6 +34,9 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
+
+
+
   );
 }
 
