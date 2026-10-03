@@ -2,16 +2,15 @@ import axios from 'axios';
 
 const API = axios.create({
   baseURL: 'http://localhost:5000/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  withCredentials: true,
 });
 
-// Request Interceptor: ലോഗിൻ ചെയ്ത ശേഷം ബാക്കെൻഡിലേക്ക് പോകുന്ന എല്ലാ റിക്വസ്റ്റിലും JWT Token സ്വയം ചേർക്കാൻ
+// dynamic token interceptor - ഓരോ റിക്വസ്റ്റിലും ലേറ്റസ്റ്റ് Token അയക്കുന്നു
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
+      // Bearer token ചേർക്കുന്നു
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

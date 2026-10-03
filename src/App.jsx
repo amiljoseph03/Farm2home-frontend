@@ -1,42 +1,71 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { AuthProvider } from './context/AuthContext';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Products from './pages/Products';
+import Cart from './pages/Cart';
+import Orders from './pages/Orders';
+import FarmerDashboard from './pages/FarmerDashboard';
+
+// Custom Home Redirection Logic
+const HomeRedirect = () => {
+  const { user } = useAuth();
+  if (user?.role?.toLowerCase() === 'farmer') {
+    return <Navigate to="/farmer/dashboard" replace />;
+  }
+  return <Products />;
+};
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Toaster position="top-right" />
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-          <Navbar />
-          <main className="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <div className="text-center py-10">
-                    <h2 className="text-3xl font-bold text-gray-800">
-                      Welcome to Farm-to-Home Marketplace
-                    </h2>
-                    <p className="text-gray-600 mt-2">
-                      Connecting  farmers directly with consumers.
-                    </p>
-                  </div>
-                }
-              />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    </AuthProvider>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Navbar />
+      <main className="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        <Routes>
+          {/* Role-Based Landing Page */}
+          <Route path="/" element={<HomeRedirect />} />
 
+          {/* Public Routes */}
+          <Route path="/products" element={<Products />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
+          {/* Buyer Only Routes */}
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <Orders />
+              </ProtectedRoute>
+            }
+          />
 
+          {/* Farmer Only Routes */}
+          <Route
+            path="/farmer/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['farmer']}>
+                <FarmerDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 

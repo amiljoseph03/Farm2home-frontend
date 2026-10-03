@@ -1,15 +1,12 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import API from '../api/axiosInstance';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
 import { LogIn, Mail, Lock } from 'lucide-react';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { login } = useAuth(); // AuthContext-ൽ നിന്നുള്ള ലോഗിൻ ഫംഗ്ഷൻ
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,23 +16,10 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const response = await API.post('/auth/login', formData);
-      const { user, token } = response.data.data;
+    // Context-ലെ login ഫംഗ്ഷൻ മാത്രം വിളിക്കുന്നു
+    await login(formData.email, formData.password);
 
-      // Auth Context-ലേക്ക് Save ചെയ്യുന്നു
-      login(user, token);
-
-      toast.success('Login Successful!');
-      navigate('/'); // Home page-ലേക്ക് Redirect ചെയ്യുന്നു
-    } catch (error) {
-      const errorMsg =
-        error.response?.data?.message ||
-        'Login failed. Please check credentials.';
-      toast.error(errorMsg);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   };
 
   return (

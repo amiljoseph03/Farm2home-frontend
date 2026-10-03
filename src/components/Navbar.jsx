@@ -46,7 +46,7 @@ const Navbar = () => {
                 {/* Farmer Navigation Links */}
                 {user.role === 'farmer' && (
                   <Link
-                    to="/farmer/orders"
+                    to="/farmer/dashboard"
                     className="hover:text-emerald-200 transition font-medium"
                   >
                     Farmer Dashboard
