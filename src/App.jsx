@@ -10,6 +10,8 @@ import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import FarmerDashboard from './pages/FarmerDashboard';
 
+import Home from './pages/Home';
+
 // Custom Home Redirection Logic
 const HomeRedirect = () => {
   const { user } = useAuth();
@@ -26,7 +28,8 @@ function App() {
       <main className="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         <Routes>
           {/* Role-Based Landing Page */}
-          <Route path="/" element={<HomeRedirect />} />
+          {/* <Route path="/" element={<HomeRedirect />} /> */}
+          <Route path="/" element={<Home />} />
 
           {/* Public Routes */}
           <Route path="/products" element={<Products />} />
