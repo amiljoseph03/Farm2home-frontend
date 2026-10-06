@@ -23,9 +23,9 @@ const HomeRedirect = () => {
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#F7F8F3] text-[#0B2118] flex flex-col font-body selection:bg-[#2E7D5B] selection:text-white overflow-x-hidden">
       <Navbar />
-      <main className="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-grow w-full">
         <Routes>
           {/* Role-Based Landing Page */}
           {/* <Route path="/" element={<HomeRedirect />} /> */}

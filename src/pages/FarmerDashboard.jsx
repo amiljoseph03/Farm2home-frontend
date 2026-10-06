@@ -95,7 +95,7 @@ const FarmerDashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="pt-24 sm:pt-28 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Top Header & Add Product Trigger Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div>

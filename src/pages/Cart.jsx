@@ -86,7 +86,7 @@ const Cart = () => {
   }, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="pt-24 pb-12 max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 space-y-6">
       <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
         <ShoppingBag className="w-7 h-7 text-emerald-600" />
         Shopping Cart

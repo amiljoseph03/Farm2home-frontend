@@ -67,7 +67,7 @@ const Products = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="pt-24 pb-12 max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 space-y-6">
       {/* Header & Search Bar */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div>
