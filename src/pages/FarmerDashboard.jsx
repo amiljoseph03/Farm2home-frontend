@@ -28,7 +28,7 @@ const FarmerDashboard = () => {
     imageUrl: '',
   });
 
-  const categories = ['Vegetables', 'Fruits', 'Grains', 'Dairy', 'Other'];
+  const categories = ['Vegetables', 'Fruits', 'Grains', 'Pulses', 'Spices', 'Organic Fertilizers', 'Seeds', 'Other'];
   const units = ['kg', 'gram', 'litre', 'piece', 'box', 'packet'];
 
   useEffect(() => {
@@ -320,6 +320,7 @@ const FarmerDashboard = () => {
                 <textarea
                   name="description"
                   rows="3"
+                  required
                   value={productData.description}
                   onChange={handleInputChange}
                   placeholder="Freshly harvested organic vegetables from farm..."

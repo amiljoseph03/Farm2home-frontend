@@ -11,12 +11,16 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const { user } = useAuth();
 
+  // Backend Mongoose Schema-യിലുള്ള exact categories
   const categories = [
     'All',
     'Vegetables',
     'Fruits',
     'Grains',
-    'Dairy',
+    'Pulses',
+    'Spices',
+    'Organic Fertilizers',
+    'Seeds',
     'Other',
   ];
 
@@ -120,84 +124,98 @@ const Products = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <div
-              key={product._id}
-              className="bg-white rounded-xl shadow-sm hover:shadow-md transition duration-200 border border-gray-100 overflow-hidden flex flex-col justify-between"
-            >
-              <div>
-                {/* Product Image Placeholder or Image */}
-                <div className="h-48 bg-emerald-50 flex items-center justify-center overflow-hidden">
-                  {product.imageUrl ? (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
+          {filteredProducts.map((product) => {
+            // Schema-യും Frontend-ഉം തമ്മിലുള്ള mapping
+            const price = product.pricePerUnit ?? product.price ?? 0;
+            const stock = product.quantityAvailable ?? product.stock ?? 0;
+            const sellerName =
+              product.seller?.name || product.farmer?.name || 'Verified Farmer';
+
+            // Image handling (Schema supports images array)
+            const imageSrc =
+              product.images?.[0] && product.images[0] !== 'default-product.jpg'
+                ? product.images[0]
+                : product.imageUrl;
+
+            return (
+              <div
+                key={product._id}
+                className="bg-white rounded-xl shadow-sm hover:shadow-md transition duration-200 border border-gray-100 overflow-hidden flex flex-col justify-between"
+              >
+                <div>
+                  {/* Product Image */}
+                  <div className="h-48 bg-emerald-50 flex items-center justify-center overflow-hidden">
+                    {imageSrc ? (
+                      <img
+                        src={imageSrc}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-4xl">🌾</span>
+                    )}
+                  </div>
+
+                  <div className="p-4">
+                    <div className="flex justify-between items-start gap-2 mb-2">
+                      <h3 className="font-bold text-gray-800 text-lg capitalize">
+                        {product.name}
+                      </h3>
+                      <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize">
+                        {product.category || 'Produce'}
+                      </span>
+                    </div>
+
+                    <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                      {product.description ||
+                        'Fresh agricultural product sourced directly.'}
+                    </p>
+
+                    <div className="text-xs text-gray-500 mb-2">
+                      Seller:{' '}
+                      <span className="font-medium text-gray-700">
+                        {sellerName}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-baseline mt-2">
+                      <span className="text-xl font-bold text-emerald-700">
+                        ₹{price}{' '}
+                        <span className="text-xs font-normal text-gray-500">
+                          / {product.unit || 'kg'}
+                        </span>
+                      </span>
+                      <span
+                        className={`text-xs font-medium ${
+                          stock > 0 ? 'text-green-600' : 'text-red-500'
+                        }`}
+                      >
+                        {stock > 0 ? `Stock: ${stock}` : 'Out of Stock'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <div className="p-4 pt-0">
+                  {user?.role === 'buyer' || !user ? (
+                    <button
+                      onClick={() => handleAddToCart(product._id)}
+                      disabled={stock <= 0}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg flex items-center justify-center gap-2 transition duration-200 disabled:opacity-50 cursor-pointer"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      <span>Add to Cart</span>
+                    </button>
                   ) : (
-                    <span className="text-4xl">🌾</span>
+                    <div className="text-center text-xs text-gray-400 py-2 border-t border-gray-100">
+                      Farmer Account
+                    </div>
                   )}
                 </div>
-
-                <div className="p-4">
-                  <div className="flex justify-between items-start gap-2 mb-2">
-                    <h3 className="font-bold text-gray-800 text-lg capitalize">
-                      {product.name}
-                    </h3>
-                    <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize">
-                      {product.category || 'Produce'}
-                    </span>
-                  </div>
-
-                  <p className="text-gray-600 text-sm line-clamp-2 mb-3">
-                    {product.description ||
-                      'Fresh agricultural product sourced directly.'}
-                  </p>
-
-                  <div className="text-xs text-gray-500 mb-2">
-                    Seller:{' '}
-                    <span className="font-medium text-gray-700">
-                      {product.farmer?.name || 'Verified Farmer'}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-baseline mt-2">
-                    <span className="text-xl font-bold text-emerald-700">
-                      ₹{product.price}{' '}
-                      <span className="text-xs font-normal text-gray-500">
-                        / {product.unit || 'kg'}
-                      </span>
-                    </span>
-                    <span
-                      className={`text-xs font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}`}
-                    >
-                      {product.stock > 0
-                        ? `Stock: ${product.stock}`
-                        : 'Out of Stock'}
-                    </span>
-                  </div>
-                </div>
               </div>
-
-              {/* Action Button */}
-              <div className="p-4 pt-0">
-                {user?.role === 'buyer' || !user ? (
-                  <button
-                    onClick={() => handleAddToCart(product._id)}
-                    disabled={product.stock <= 0}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg flex items-center justify-center gap-2 transition duration-200 disabled:opacity-50 cursor-pointer"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                    <span>Add to Cart</span>
-                  </button>
-                ) : (
-                  <div className="text-center text-xs text-gray-400 py-2 border-t border-gray-100">
-                    Farmer Account
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
