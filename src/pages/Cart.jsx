@@ -2,14 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axiosInstance';
 import toast from 'react-hot-toast';
-import {
-  ShoppingBag,
-  Trash2,
-  Plus,
-  Minus,
-  ArrowRight,
-  CheckCircle,
-} from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 
 const Cart = () => {
   const [cart, setCart] = useState(null);
@@ -28,8 +21,7 @@ const Cart = () => {
       setCart(response.data.data.cart || response.data.data || null);
     } catch (error) {
       toast.error('Failed to load cart items');
-    }
-    fontFinally: {
+    } finally {
       setLoading(false);
     }
   };
@@ -65,10 +57,9 @@ const Cart = () => {
 
     setCheckoutLoading(true);
     try {
-      // Backend Order Pipeline (/orders) 호출ിക്കുന്നു
       await API.post('/orders', { shippingAddress });
       toast.success('Order placed successfully!');
-      navigate('/orders'); // Order history/details page-ലേക്ക് redirect ചെയ്യുന്നു
+      navigate('/orders');
     } catch (error) {
       const errorMsg =
         error.response?.data?.message || 'Checkout failed. Please try again.';
@@ -87,10 +78,12 @@ const Cart = () => {
   }
 
   const items = cart?.items || [];
-  const totalPrice = items.reduce(
-    (acc, item) => acc + (item.product?.price || 0) * item.quantity,
-    0,
-  );
+
+  // Price Calculation Fix: Schema-യിലെ pricePerUnit, price എന്നീ രണ്ട് ഫീൽഡുകളെയും support ചെയ്യുന്നു
+  const totalPrice = items.reduce((acc, item) => {
+    const itemPrice = item.product?.pricePerUnit ?? item.product?.price ?? 0;
+    return acc + itemPrice * item.quantity;
+  }, 0);
 
   return (
     <div className="space-y-6">
@@ -119,66 +112,85 @@ const Cart = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items List */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
-              <div
-                key={item.product?._id || item._id}
-                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4"
-              >
-                <div className="flex items-center gap-4 w-full sm:w-auto">
-                  <div className="w-16 h-16 bg-emerald-50 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
-                    🌾
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-800 capitalize">
-                      {item.product?.name}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      ₹{item.product?.price} / {item.product?.unit || 'kg'}
-                    </p>
-                  </div>
-                </div>
+            {items.map((item) => {
+              const productId = item.product?._id || item.product;
+              const price =
+                item.product?.pricePerUnit ?? item.product?.price ?? 0;
+              const imageSrc =
+                item.product?.images?.[0] &&
+                item.product?.images[0] !== 'default-product.jpg'
+                  ? item.product.images[0]
+                  : item.product?.imageUrl;
 
-                <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-                  {/* Quantity Controller */}
-                  <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                    <button
-                      onClick={() =>
-                        updateQuantity(item.product._id, item.quantity, -1)
-                      }
-                      className="p-1.5 hover:bg-gray-100 text-gray-600 transition"
-                      disabled={item.quantity <= 1}
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="px-3 font-semibold text-gray-800 text-sm">
-                      {item.quantity}
+              return (
+                <div
+                  key={productId || item._id}
+                  className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-4 w-full sm:w-auto">
+                    <div className="w-16 h-16 bg-emerald-50 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
+                      {imageSrc ? (
+                        <img
+                          src={imageSrc}
+                          alt={item.product?.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        '🌾'
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-800 capitalize">
+                        {item.product?.name || 'Product'}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        ₹{price} / {item.product?.unit || 'kg'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+                    {/* Quantity Controller */}
+                    <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() =>
+                          updateQuantity(productId, item.quantity, -1)
+                        }
+                        className="p-1.5 hover:bg-gray-100 text-gray-600 transition disabled:opacity-40"
+                        disabled={item.quantity <= 1}
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="px-3 font-semibold text-gray-800 text-sm">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          updateQuantity(productId, item.quantity, 1)
+                        }
+                        className="p-1.5 hover:bg-gray-100 text-gray-600 transition"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Subtotal */}
+                    <span className="font-bold text-emerald-700 w-20 text-right">
+                      ₹{price * item.quantity}
                     </span>
+
+                    {/* Remove Button */}
                     <button
-                      onClick={() =>
-                        updateQuantity(item.product._id, item.quantity, 1)
-                      }
-                      className="p-1.5 hover:bg-gray-100 text-gray-600 transition"
+                      onClick={() => removeItem(productId)}
+                      className="text-gray-400 hover:text-red-500 transition cursor-pointer"
+                      title="Remove item"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
-
-                  {/* Subtotal */}
-                  <span className="font-bold text-emerald-700 w-20 text-right">
-                    ₹{(item.product?.price || 0) * item.quantity}
-                  </span>
-
-                  {/* Remove Button */}
-                  <button
-                    onClick={() => removeItem(item.product._id)}
-                    className="text-gray-400 hover:text-red-500 transition cursor-pointer"
-                    title="Remove item"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Checkout / Order Summary Box */}
