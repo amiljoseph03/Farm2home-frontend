@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -17,9 +17,17 @@ import Cart from './pages/buyer/Cart';
 import Orders from './pages/buyer/Orders';
 
 function App() {
+  const location = useLocation();
+
+  // Hide the global Navbar on these routes
+  const hideNavbarRoutes = ['/farmer/dashboard'];
+  const hideNavbar = hideNavbarRoutes.includes(location.pathname);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
+      {/* Conditionally render Navbar */}
+      {!hideNavbar && <Navbar />}
+
       <main className="flex-grow w-full overflow-x-hidden">
         <Routes>
           {/* Landing Page */}
@@ -76,7 +84,10 @@ function App() {
 
           {/* Legacy redirect aliases so old links still work */}
           <Route path="/cart" element={<Navigate to="/buyer/cart" replace />} />
-          <Route path="/orders" element={<Navigate to="/buyer/orders" replace />} />
+          <Route
+            path="/orders"
+            element={<Navigate to="/buyer/orders" replace />}
+          />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
