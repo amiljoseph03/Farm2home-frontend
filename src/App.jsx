@@ -5,30 +5,24 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Products from './pages/Products';
-import Cart from './pages/Cart';
-import Orders from './pages/Orders';
-import FarmerDashboard from './pages/FarmerDashboard';
-
 import Home from './pages/Home';
 
-// Custom Home Redirection Logic
-const HomeRedirect = () => {
-  const { user } = useAuth();
-  if (user?.role?.toLowerCase() === 'farmer') {
-    return <Navigate to="/farmer/dashboard" replace />;
-  }
-  return <Products />;
-};
+// Farmer pages
+import FarmerDashboard from './pages/farmer/FarmerDashboard';
+import Products from './pages/farmer/Products';
+
+// Buyer pages
+import BuyerDashboard from './pages/buyer/BuyerDashboard';
+import Cart from './pages/buyer/Cart';
+import Orders from './pages/buyer/Orders';
 
 function App() {
   return (
-    <div className="min-h-screen bg-[#F7F8F3] text-[#0B2118] flex flex-col font-body selection:bg-[#2E7D5B] selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <main className="flex-grow w-full">
+      <main className="flex-grow w-full overflow-x-hidden">
         <Routes>
-          {/* Role-Based Landing Page */}
-          {/* <Route path="/" element={<HomeRedirect />} /> */}
+          {/* Landing Page */}
           <Route path="/" element={<Home />} />
 
           {/* Public Routes */}
@@ -36,25 +30,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Buyer Only Routes */}
-          <Route
-            path="/cart"
-            element={
-              <ProtectedRoute allowedRoles={['buyer']}>
-                <Cart />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/orders"
-            element={
-              <ProtectedRoute allowedRoles={['buyer']}>
-                <Orders />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Farmer Only Routes */}
+          {/* Farmer Routes */}
           <Route
             path="/farmer/dashboard"
             element={
@@ -63,6 +39,44 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/farmer/products"
+            element={
+              <ProtectedRoute allowedRoles={['farmer']}>
+                <Products />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Buyer Routes */}
+          <Route
+            path="/buyer/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <BuyerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyer/cart"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyer/orders"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <Orders />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Legacy redirect aliases so old links still work */}
+          <Route path="/cart" element={<Navigate to="/buyer/cart" replace />} />
+          <Route path="/orders" element={<Navigate to="/buyer/orders" replace />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

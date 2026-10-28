@@ -23,8 +23,7 @@ const Login = () => {
   };
 
   return (
-    <div className="pt-28 pb-12 px-4">
-      <div className="max-w-md mx-auto p-6 bg-white rounded-2xl shadow-xl border border-gray-100">
+    <div className="max-w-md mx-auto my-10 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
       <div className="flex items-center justify-center gap-2 mb-6">
         <LogIn className="w-8 h-8 text-emerald-600" />
         <h2 className="text-2xl font-bold text-gray-800">Login to Farm2Home</h2>
@@ -86,8 +85,7 @@ const Login = () => {
         </Link>
       </p>
     </div>
-  </div>
-);
+  );
 };
 
 export default Login;

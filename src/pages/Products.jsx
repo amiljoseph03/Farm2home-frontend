@@ -67,7 +67,7 @@ const Products = () => {
   });
 
   return (
-    <div className="pt-24 pb-12 max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 space-y-6">
+    <div className="space-y-6">
       {/* Header & Search Bar */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div>
@@ -186,9 +186,8 @@ const Products = () => {
                         </span>
                       </span>
                       <span
-                        className={`text-xs font-medium ${
-                          stock > 0 ? 'text-green-600' : 'text-red-500'
-                        }`}
+                        className={`text-xs font-medium ${stock > 0 ? 'text-green-600' : 'text-red-500'
+                          }`}
                       >
                         {stock > 0 ? `Stock: ${stock}` : 'Out of Stock'}
                       </span>

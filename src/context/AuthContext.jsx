@@ -54,9 +54,9 @@ export const AuthProvider = ({ children }) => {
         const userRole = responseUser.role?.toLowerCase();
 
         if (userRole === 'farmer') {
-          navigate('/farmer/dashboard'); // 👈 '/farmer-dashboard'-ന് പകരം ഇത് നൽകുക
+          navigate('/farmer/dashboard');
         } else if (userRole === 'buyer' || userRole === 'user') {
-          navigate('/');
+          navigate('/buyer/dashboard');
         } else if (userRole === 'admin') {
           navigate('/admin-dashboard');
         } else {
