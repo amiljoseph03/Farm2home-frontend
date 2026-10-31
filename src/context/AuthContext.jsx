@@ -18,8 +18,22 @@ export const AuthProvider = ({ children }) => {
 
     if (storedUser && storedToken) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
         setToken(storedToken);
+
+        // പശ്ചാത്തലത്തിൽ പുതിയ യൂസർ ഡാറ്റ Fetch ചെയ്യുന്നു (Sync)
+        API.get('/auth/me')
+          .then((res) => {
+            const freshUser = res.data?.data?.user || res.data?.user;
+            if (freshUser) {
+              setUser(freshUser);
+              localStorage.setItem('user', JSON.stringify(freshUser));
+            }
+          })
+          .catch(() => {
+            // Silently ignore sync failures on offline / network error
+          });
       } catch (err) {
         console.error('Failed to parse user from localStorage', err);
         localStorage.removeItem('user');
@@ -72,7 +86,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 3. ലോഗൗട്ട് ഫംഗ്ഷൻ
+  // 3. യൂസർ പ്രൊഫൈൽ ഇൻ-മെമ്മറിയും ലോക്കൽ സ്റ്റോറേജിലും ഉടൻ അപ്‌ഡേറ്റ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
+  // 4. സർവറിൽ നിന്ന് പുതിയ യൂസർ പ്രൊഫൈൽ റീഫ്രഷ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
+  const refreshUser = async () => {
+    try {
+      const res = await API.get('/auth/me');
+      const freshUser = res.data?.data?.user || res.data?.user;
+      if (freshUser) {
+        setUser(freshUser);
+        localStorage.setItem('user', JSON.stringify(freshUser));
+        return freshUser;
+      }
+    } catch (err) {
+      console.error('Failed to refresh user:', err);
+    }
+    return null;
+  };
+
+  // 5. ലോഗൗട്ട് ഫംഗ്ഷൻ
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -83,7 +119,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{ user, token, login, logout, loading, updateUser, refreshUser }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );

@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
+import { Toaster } from 'react-hot-toast';
 import 'react-toastify/dist/ReactToastify.css';
 
 import App from './App.jsx';
@@ -15,6 +16,7 @@ createRoot(document.getElementById('root')).render(
       {/* 2. AuthProvider അതിന് ഉള്ളിൽ നൽകുക */}
       <AuthProvider>
         <App />
+        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <ToastContainer position="top-right" autoClose={3000} />
       </AuthProvider>
     </BrowserRouter>

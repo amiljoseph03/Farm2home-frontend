@@ -19,8 +19,13 @@ import Orders from './pages/buyer/Orders';
 function App() {
   const location = useLocation();
 
-  // Hide the global Navbar on these routes
-  const hideNavbarRoutes = ['/farmer/dashboard'];
+  // Hide the global Navbar on dashboard routes with custom sidebars
+  const hideNavbarRoutes = [
+    '/farmer/dashboard',
+    '/farmer/profile',
+    '/buyer/dashboard',
+    '/buyer/profile',
+  ];
   const hideNavbar = hideNavbarRoutes.includes(location.pathname);
 
   return (
@@ -48,6 +53,14 @@ function App() {
             }
           />
           <Route
+            path="/farmer/profile"
+            element={
+              <ProtectedRoute allowedRoles={['farmer']}>
+                <FarmerDashboard initialTab="profile" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/farmer/products"
             element={
               <ProtectedRoute allowedRoles={['farmer']}>
@@ -62,6 +75,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['buyer']}>
                 <BuyerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyer/profile"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <BuyerDashboard initialTab="profile" />
               </ProtectedRoute>
             }
           />

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API from '../../api/axiosInstance';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import Profile from '../../components/Profile';
 import {
   Package,
   PlusCircle,
@@ -278,12 +279,19 @@ const ProductForm = ({
 );
 
 // ─── MAIN COMPONENT ────────────────────────────────────────────────────────────
-const FarmerDashboard = () => {
+const FarmerDashboard = ({ initialTab = 'orders' }) => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('orders');
+  const [activeTab, setActiveTab] = useState(initialTab || 'orders');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   // Orders
   const [orders, setOrders] = useState([]);
@@ -565,117 +573,273 @@ const FarmerDashboard = () => {
   // ── RENDER ──────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans">
-      {/* SIDEBAR */}
+      {/* SIDEBAR (Sticky on Desktop, Icon-Only Rail Expanding on Hover) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-emerald-900 text-white transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:inset-0 flex flex-col shadow-2xl`}
+        onMouseEnter={() => setIsSidebarHovered(true)}
+        onMouseLeave={() => setIsSidebarHovered(false)}
+        className={`fixed top-0 bottom-0 left-0 z-50 h-screen bg-[#071811] text-white flex flex-col justify-between shadow-2xl transition-all duration-300 ease-in-out border-r border-emerald-950/80 select-none
+          ${isSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'}
+          ${isSidebarHovered ? 'lg:w-64' : 'lg:w-20'}
+        `}
       >
-        <div className="h-20 flex items-center px-6 border-b border-emerald-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+        {/* Brand / Logo Header */}
+        <div className="h-20 flex items-center px-4 border-b border-emerald-900/60 shrink-0 overflow-hidden">
+          <div className="flex items-center gap-3 w-full">
+            <div className="w-12 h-12 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg shrink-0 mx-auto lg:mx-0">
               <Package className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold tracking-wide">Farm2Home</h2>
-              <p className="text-[10px] text-emerald-300 uppercase tracking-widest">
+            <div
+              className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
+                isSidebarHovered || isSidebarOpen
+                  ? 'opacity-100 max-w-xs'
+                  : 'opacity-0 max-w-0 pointer-events-none'
+              }`}
+            >
+              <h2 className="text-lg font-black tracking-wide bg-gradient-to-r from-white via-emerald-100 to-[#A8D86E] bg-clip-text text-transparent">
+                Farm2Home
+              </h2>
+              <p className="text-[10px] text-emerald-400 uppercase tracking-widest font-bold">
                 Farmer Portal
               </p>
             </div>
           </div>
+          {/* Mobile close button */}
           <button
-            className="ml-auto lg:hidden"
+            className="ml-auto lg:hidden text-emerald-200 hover:text-white p-1"
             onClick={() => setIsSidebarOpen(false)}
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          <p className="px-2 text-xs font-bold text-emerald-400 uppercase tracking-wider mb-3">
+        {/* Navigation Menu */}
+        <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-none">
+          <p
+            className={`px-3 text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2 transition-all duration-300 ${
+              isSidebarHovered || isSidebarOpen
+                ? 'opacity-100'
+                : 'opacity-0 h-0 overflow-hidden'
+            }`}
+          >
             Menu
           </p>
+
           {[
             {
               id: 'orders',
-              icon: <LayoutDashboard className="w-5 h-5" />,
+              icon: <LayoutDashboard className="w-5 h-5 shrink-0" />,
               label: 'Order Management',
             },
             {
               id: 'products',
-              icon: <ShoppingBag className="w-5 h-5" />,
+              icon: <ShoppingBag className="w-5 h-5 shrink-0" />,
               label: 'My Products',
               badge: expiredProducts.length || null,
             },
-          ].map(({ id, icon, label, badge }) => (
+            {
+              id: 'profile',
+              icon: <User className="w-5 h-5 shrink-0" />,
+              label: 'My Profile & Farm',
+            },
+          ].map(({ id, icon, label, badge }) => {
+            const isActive = activeTab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => {
+                  setActiveTab(id);
+                  setIsSidebarOpen(false);
+                }}
+                title={!isSidebarHovered && !isSidebarOpen ? label : undefined}
+                className={`w-full flex items-center rounded-2xl transition-all duration-200 cursor-pointer relative ${
+                  isActive
+                    ? 'bg-gradient-to-r from-emerald-700 to-emerald-800 text-white shadow-lg shadow-emerald-950/50 font-bold'
+                    : 'text-emerald-200/80 hover:bg-emerald-900/40 hover:text-white'
+                } ${isSidebarHovered || isSidebarOpen ? 'px-4 py-3 gap-3.5 justify-start' : 'p-3 justify-center'}`}
+              >
+                {/* Active Indicator Bar */}
+                {isActive && (
+                  <span className="absolute left-0 top-2 bottom-2 w-1.5 bg-[#A8D86E] rounded-r-full shadow-sm" />
+                )}
+
+                {/* Icon wrapper */}
+                <div className="relative flex items-center justify-center">
+                  {icon}
+                  {/* Small badge dot in collapsed rail */}
+                  {!isSidebarHovered && !isSidebarOpen && badge && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-[#071811]" />
+                  )}
+                </div>
+
+                {/* Label & Expanded Badge */}
+                <div
+                  className={`flex items-center justify-between flex-1 overflow-hidden whitespace-nowrap transition-all duration-300 ${
+                    isSidebarHovered || isSidebarOpen
+                      ? 'opacity-100 max-w-xs'
+                      : 'opacity-0 max-w-0 pointer-events-none'
+                  }`}
+                >
+                  <span className="text-sm font-semibold truncate">{label}</span>
+                  {badge && (
+                    <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full ml-2 shadow-sm">
+                      {badge}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+
+          {/* Account Section */}
+          <div className="pt-4">
+            <p
+              className={`px-3 text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2 transition-all duration-300 ${
+                isSidebarHovered || isSidebarOpen
+                  ? 'opacity-100'
+                  : 'opacity-0 h-0 overflow-hidden'
+              }`}
+            >
+              Account
+            </p>
+            <div
+              className={`my-2 border-t border-emerald-900/60 ${
+                isSidebarHovered || isSidebarOpen ? 'hidden' : 'block'
+              }`}
+            />
+
             <button
-              key={id}
               onClick={() => {
-                setActiveTab(id);
+                setActiveTab('profile');
                 setIsSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === id ? 'bg-emerald-800 text-white shadow-inner border-l-4 border-emerald-400' : 'text-emerald-100 hover:bg-emerald-800/50'}`}
+              title={
+                !isSidebarHovered && !isSidebarOpen
+                  ? 'Profile Settings'
+                  : undefined
+              }
+              className={`w-full flex items-center rounded-2xl transition-all duration-200 cursor-pointer relative ${
+                activeTab === 'profile' || activeTab === 'settings'
+                  ? 'bg-gradient-to-r from-emerald-700 to-emerald-800 text-white shadow-lg shadow-emerald-950/50 font-bold'
+                  : 'text-emerald-200/80 hover:bg-emerald-900/40 hover:text-white'
+              } ${isSidebarHovered || isSidebarOpen ? 'px-4 py-3 gap-3.5 justify-start' : 'p-3 justify-center'}`}
             >
-              {icon}
-              <span className="font-medium text-sm flex-1 text-left">
-                {label}
-              </span>
-              {badge && (
-                <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
-                  {badge}
-                </span>
+              {(activeTab === 'profile' || activeTab === 'settings') && (
+                <span className="absolute left-0 top-2 bottom-2 w-1.5 bg-[#A8D86E] rounded-r-full shadow-sm" />
               )}
+              <Settings className="w-5 h-5 shrink-0" />
+              <span
+                className={`text-sm font-semibold truncate transition-all duration-300 whitespace-nowrap ${
+                  isSidebarHovered || isSidebarOpen
+                    ? 'opacity-100 max-w-xs'
+                    : 'opacity-0 max-w-0 pointer-events-none'
+                }`}
+              >
+                Profile Settings
+              </span>
             </button>
-          ))}
-          <p className="px-2 text-xs font-bold text-emerald-400 uppercase tracking-wider mt-8 mb-3">
-            Account
-          </p>
-          <button
-            onClick={() => {
-              setActiveTab('settings');
-              setIsSidebarOpen(false);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === 'settings' ? 'bg-emerald-800 text-white shadow-inner border-l-4 border-emerald-400' : 'text-emerald-100 hover:bg-emerald-800/50'}`}
-          >
-            <Settings className="w-5 h-5" />
-            <span className="font-medium text-sm">Profile Settings</span>
-          </button>
+          </div>
         </nav>
 
-        <div className="p-4 border-t border-emerald-800 bg-emerald-950/50">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center border-2 border-emerald-500">
-              <User className="w-5 h-5 text-emerald-200" />
+        {/* Footer User Card & Sign Out */}
+        <div className="p-3 border-t border-emerald-900/60 bg-black/20 shrink-0">
+          <div
+            onClick={() => {
+              setActiveTab('profile');
+              setIsSidebarOpen(false);
+            }}
+            title={
+              !isSidebarHovered && !isSidebarOpen
+                ? `${user?.name || 'Farmer'} (Profile)`
+                : undefined
+            }
+            className={`flex items-center rounded-2xl p-2 transition-all duration-200 cursor-pointer hover:bg-emerald-900/40 group ${
+              isSidebarHovered || isSidebarOpen ? 'gap-3' : 'justify-center'
+            }`}
+          >
+            <div className="w-10 h-10 rounded-full bg-emerald-800 flex items-center justify-center border-2 border-emerald-500 overflow-hidden shrink-0 shadow-md group-hover:scale-105 transition-transform aspect-square">
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user?.name || 'Farmer'}
+                  className="w-full h-full object-cover aspect-square"
+                />
+              ) : (
+                <User className="w-5 h-5 text-emerald-200" />
+              )}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate">
+            <div
+              className={`flex-1 min-w-0 transition-all duration-300 overflow-hidden whitespace-nowrap ${
+                isSidebarHovered || isSidebarOpen
+                  ? 'opacity-100 max-w-xs'
+                  : 'opacity-0 max-w-0 pointer-events-none'
+              }`}
+            >
+              <p className="text-sm font-bold truncate text-white group-hover:text-[#A8D86E] transition-colors">
                 {user?.name || 'Farmer'}
               </p>
-              <p className="text-xs text-emerald-400 truncate">
-                {user?.email || ''}
+              <p className="text-[11px] text-emerald-400 truncate">
+                {user?.farmName || user?.email || 'Manage Profile →'}
               </p>
             </div>
           </div>
+
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2.5 rounded-lg transition-colors text-sm font-semibold border border-red-500/20"
+            title={!isSidebarHovered && !isSidebarOpen ? 'Sign Out' : undefined}
+            className={`mt-2 w-full flex items-center rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 transition-colors text-xs font-bold border border-red-500/20 cursor-pointer ${
+              isSidebarHovered || isSidebarOpen
+                ? 'py-2.5 px-3 justify-center gap-2'
+                : 'p-2.5 justify-center'
+            }`}
           >
-            <LogOut className="w-4 h-4" /> Sign Out
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span
+              className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
+                isSidebarHovered || isSidebarOpen
+                  ? 'opacity-100 max-w-xs'
+                  : 'opacity-0 max-w-0 pointer-events-none'
+              }`}
+            >
+              Sign Out
+            </span>
           </button>
         </div>
       </aside>
 
-      {/* MAIN */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      {/* MAIN CONTAINER (Shifts and adjusts width when sidebar expands) */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 min-h-screen transition-all duration-300 ease-in-out ${
+          isSidebarHovered ? 'lg:pl-64' : 'lg:pl-20'
+        }`}
+      >
         <header className="lg:hidden bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sticky top-0 z-40">
           <div className="flex items-center gap-2">
             <Package className="w-6 h-6 text-emerald-600" />
             <span className="font-bold text-gray-800">Farmer Portal</span>
           </div>
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="p-2 text-gray-600"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden border border-emerald-300 cursor-pointer shadow-sm shrink-0 aspect-square"
+              title="Farmer Profile"
+            >
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name || 'Farmer'}
+                  className="w-full h-full object-cover aspect-square"
+                />
+              ) : (
+                <User className="w-4 h-4 text-emerald-700" />
+              )}
+            </button>
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 text-gray-600 hover:text-emerald-700 transition cursor-pointer"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
@@ -686,15 +850,16 @@ const FarmerDashboard = () => {
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
                   {activeTab === 'orders' && 'Order Management'}
                   {activeTab === 'products' && 'My Products'}
-                  {activeTab === 'settings' && 'Account Settings'}
+                  {(activeTab === 'profile' || activeTab === 'settings') &&
+                    'Farmer Profile & Farm Details'}
                 </h1>
                 <p className="text-gray-500 text-sm mt-1">
                   {activeTab === 'orders' &&
                     'Manage incoming orders from your customers.'}
                   {activeTab === 'products' &&
                     'View, edit, and manage your listed farm produce.'}
-                  {activeTab === 'settings' &&
-                    'Update your personal information.'}
+                  {(activeTab === 'profile' || activeTab === 'settings') &&
+                    'View, edit, and manage your personal credentials and farm details.'}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -707,7 +872,7 @@ const FarmerDashboard = () => {
                     <RefreshCw className="w-4 h-4" />
                   </button>
                 )}
-                {activeTab !== 'settings' && (
+                {activeTab !== 'settings' && activeTab !== 'profile' && (
                   <button
                     onClick={() => setIsAddModalOpen(true)}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/20 active:scale-95"
@@ -983,56 +1148,13 @@ const FarmerDashboard = () => {
               </div>
             )}
 
-            {/* ─── SETTINGS TAB ─── */}
-            {activeTab === 'settings' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-                <h2 className="text-xl font-bold text-gray-800 mb-6 border-b pb-4">
-                  Profile Information
-                </h2>
-                <div className="space-y-6 max-w-2xl">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {[
-                      {
-                        label: 'Full Name',
-                        type: 'text',
-                        value: user?.name || '',
-                      },
-                      {
-                        label: 'Email Address',
-                        type: 'email',
-                        value: user?.email || '',
-                      },
-                    ].map(({ label, type, value }) => (
-                      <div key={label}>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          {label}
-                        </label>
-                        <input
-                          type={type}
-                          defaultValue={value}
-                          className="w-full p-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
-                          disabled
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="p-4 bg-blue-50 text-blue-700 rounded-xl text-sm border border-blue-100 flex gap-3 items-start">
-                    <AlertTriangle className="w-5 h-5 shrink-0" />
-                    <div>
-                      <p className="font-semibold mb-1">
-                        Need to update your details?
-                      </p>
-                      <p>
-                        Profile editing can be connected to a{' '}
-                        <code className="bg-blue-100 px-1 rounded">
-                          PATCH /users/profile
-                        </code>{' '}
-                        endpoint.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* ─── PROFILE & SETTINGS TAB ─── */}
+            {(activeTab === 'profile' || activeTab === 'settings') && (
+              <Profile
+                role="farmer"
+                productsCount={products.length}
+                ordersCount={orders.length}
+              />
             )}
           </div>
         </main>
